@@ -115,7 +115,7 @@ void preparacionKalman(Rect detections, KalmanFilter* kalman) {
     setIdentity(KF.processNoiseCov, Scalar::all(.00005)); //adjust this for faster convergence - but higher noise
     //KF.processNoiseCov = (Mat_<float>(6, 6) << 0.00005, 0, 0.00005, 0, 0, 0, 0, 0.00005, 0, 0.00005, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005);
 
-    setIdentity(KF.measurementNoiseCov, Scalar::all(0.001)); //Que tanto se confia en la medicion, que tanto espero varíe, 0.01 ok
+    setIdentity(KF.measurementNoiseCov, Scalar::all(0.001)); //Que tanto se confia en la medicion, que tanto espero varÃ­e, 0.01 ok
     //KF.measurementNoiseCov = (Mat_<float>(6, 6) << 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1);
 
     setIdentity(KF.errorCovPost, Scalar::all(0.1)); //Menor se mueve menos, esperas menos movimiento 0.1 ok
