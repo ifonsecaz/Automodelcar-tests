@@ -10,7 +10,7 @@ using namespace cv;
 using namespace cv::ml;
 using namespace std;
 
-void kalman(KalmanFilter kf, Rect detections, Mat img, int i, bool found, double time,KalmanFilter* nuevo) {
+void kalman(KalmanFilter kf, Rect detections, Mat img, int i, bool found, double time, KalmanFilter* nuevo) {
     //KalmanFilter(int  	dynamParams,        int  	measureParams,        int  	controlParams = 0,        int  	type = CV_32F)
     //correct
     //predict
@@ -115,7 +115,7 @@ void preparacionKalman(Rect detections, KalmanFilter* kalman) {
     setIdentity(KF.processNoiseCov, Scalar::all(.00005)); //adjust this for faster convergence - but higher noise
     //KF.processNoiseCov = (Mat_<float>(6, 6) << 0.00005, 0, 0.00005, 0, 0, 0, 0, 0.00005, 0, 0.00005, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005, 0, 0, 0, 0, 0, 0, 0.00005);
 
-    setIdentity(KF.measurementNoiseCov, Scalar::all(0.001)); //Que tanto se confia en la medicion, que tanto espero varíe, 0.01 ok
+    setIdentity(KF.measurementNoiseCov, Scalar::all(0.001)); //Que tanto se confia en la medicion, que tanto espero varÃ­e, 0.01 ok
     //KF.measurementNoiseCov = (Mat_<float>(6, 6) << 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1, 0, 0, 0, 0, 0, 0, 1e-1);
 
     setIdentity(KF.errorCovPost, Scalar::all(0.1)); //Menor se mueve menos, esperas menos movimiento 0.1 ok
@@ -190,31 +190,125 @@ int main(int argc, char** argv)
             string path = "C:/Users/ifons/source/repos/validKalman/validKalman/Res.jpg";
             img = imread(path);
         }
-            /*
-            if (i == 3) {
-                printf("entre");
-                string path ="C:/Users/ifons/source/repos/validKalman/validKalman/res3.jpg" ;
-                    img = imread(path);
-                //}
-            }
-            if (i == 4) {
-                printf("entre");
-                string path = "C:/Users/ifons/source/repos/validKalman/validKalman/res4.jpg";
+        /*
+        if (i == 3) {
+            printf("entre");
+            string path ="C:/Users/ifons/source/repos/validKalman/validKalman/res3.jpg" ;
                 img = imread(path);
-                //}
-            }
-            */
+            //}
+        }
+        if (i == 4) {
+            printf("entre");
+            string path = "C:/Users/ifons/source/repos/validKalman/validKalman/res4.jpg";
+            img = imread(path);
+            //}
+        }
+        */
         if (i < 5) {
-            kalman(a, detec[i + 1], img, i, true, time[i],&b);
+            kalman(a, detec[i + 1], img, i, true, time[i], &b);
             a = b;
             val = true;
             detections = detec[i + 1];
         }
         else {
-            kalman(a, detec[0], img, i, false, time[i],&b);
+            kalman(a, detec[0], img, i, false, time[i], &b);
             a = b;
             val = false;
             detections = detec[0];
         }
     }
+    std::cout << "\nSig: ";
+    //Filtro es a
+    
+    Mat state(6, 1, CV_32F); //(6,1)?
+    Rect predRect;
+    
+    //KalmanFilter c = a.clone();
+    KalmanFilter c;
+    c.controlMatrix = a.controlMatrix.clone();
+    c.errorCovPost = a.errorCovPost.clone();
+    c.errorCovPre = a.errorCovPre.clone();
+    c.gain = a.gain.clone();
+    c.measurementMatrix = a.measurementMatrix.clone();
+    c.measurementNoiseCov = a.measurementNoiseCov.clone();
+    c.processNoiseCov = a.processNoiseCov.clone();
+    c.statePost = a.statePost.clone();
+    c.statePre = a.statePre.clone();
+    c.transitionMatrix = a.transitionMatrix.clone();
+    c.temp1 = a.temp1.clone();
+    c.temp2 = a.temp2.clone();
+    c.temp3 = a.temp3.clone();
+    c.temp4 = a.temp4.clone();
+    c.temp5 = a.temp5.clone();
+    
+    state = c.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    c.statePre.copyTo(c.statePost);
+    c.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro Copia1: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+
+    state = c.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    c.statePre.copyTo(c.statePost);
+    c.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro Copia2: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+    state = c.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    c.statePre.copyTo(c.statePost);
+    c.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro Copia3: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+    state = c.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    c.statePre.copyTo(c.statePost);
+    c.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro Copia4: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+    state = c.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    c.statePre.copyTo(c.statePost);
+    c.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro Copia4aaa: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+    state = a.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    a.statePre.copyTo(c.statePost);
+    a.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro O1: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
+
+    state = a.predict();
+    predRect.width = state.at<float>(4);
+    predRect.height = state.at<float>(5);
+    predRect.x = state.at<float>(0);
+    predRect.y = state.at<float>(1);
+    a.statePre.copyTo(c.statePost);
+    a.errorCovPre.copyTo(c.errorCovPost);
+
+    std::cout << "\nFiltro O2: " << predRect.x << " y " << predRect.y << " w " << predRect.width << " h " << predRect.height;
 }
