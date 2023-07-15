@@ -1,11 +1,2 @@
-detec[] posA
-detec[] posSig1
-detec[] posSig2
-detec[] posSig3
-detec[] posSig4
-detec[] posSig5
-detec[] posSig6
-detec[] posSig7
-detec[] posSig8
-detec[] posSig9
-detec[] posSig10
+detec posA
+detec[] posSig
