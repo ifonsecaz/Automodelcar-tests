@@ -195,7 +195,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     }
 
     int x1, y1,width1,height1;
-    extra = (int)0.8 * width;
+    int extra = (int)0.8 * width;
     if ((x + width +extra)> 640) {
         width1 = 640 - x + extra;
         x1 = x - extra;
@@ -230,7 +230,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     vector< Rect > detectionsCascada;
     vector< Rect > detectionsFinal;
     Mat imgAux;
-	Mat imgROI;
+	//Mat imgROI;
     Mat imgSVM;
     Mat imgSVMBLUR;
 	Mat imgSVMF;
@@ -262,10 +262,10 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 	//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
     vector<Rect>detectionDup;
     detectionDup = detectionsCascada;
-    detectionsCascada.insert(detections2.end(), detectionDup.begin(), detectionDup.end());
+    detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
 
     cout << "\n number of detections: " << (int)detectionsCascada.size();
-    if ((int(detections2.size() > 0))) {
+    if ((int(detectionsCascada.size() > 0))) {
         *encontro = true;
 		//Descomentar para usar las máquinas de soporte vectorial
         //Sin Validacion gana 50 ms aproximadamente
@@ -677,13 +677,13 @@ int main(int argc, char** argv)
 
         while (m < numberO) {
             if (i == ultimoFrame[m]) {
-                kalman(kalmans[m], objetos[m], img2,i,true,PrediccionActual,lastPrediction,&a);
+                kalman(filtrosK[m], objetos[m], imgF,i,true,PrediccionActual,lastPrediction,&a);
                 filtrosK[m] = a;
             }
             else {
 				//Considera un máximo de 15 frames sin aparecer para eliminarlo
                 if (i - ultimoFrame[m] <15) { //segun fps
-                    kalman(kalmans[m], objetos[m], img2, i, false,PrediccionActual,lastPrediction,&a);
+                    kalman(filtrosK[m], objetos[m], imgF, i, false,PrediccionActual,lastPrediction,&a);
                     filtrosK[m] = a;
                 }
                 else
