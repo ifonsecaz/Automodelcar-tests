@@ -554,9 +554,9 @@ int main(int argc, char** argv)
 	
 	ros::Rate loop_rate(RATE_HZ);
 
-	String cascadaFile = "C:/Users/ifons/source/repos/cascada/cascada/data%/cascade.xml"; 
-    String svmFile = "C:/Users/ifons/source/repos/kalman/kalman/my_svmML4C.yml"; //my_svmML3C.yml
-    String svmFile2 = "C:/Users/ifons/source/repos/kalman/kalman/my_svmML4L.yml"; //my_svmML3L.yml
+	String cascadaFile = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/cascade.xml"; 
+    String svmFile = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/my_svmML4C.yml"; //my_svmML3C.yml
+    String svmFile2 = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/my_svmML4L.yml"; //my_svmML3L.yml
 
     cout << "Iniciando detector..." << endl;
 	
