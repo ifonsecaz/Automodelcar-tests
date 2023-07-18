@@ -237,7 +237,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     }
 
     int x1, y1,width1,height1;
-    extra = (int)0.8 * width;
+    int extra = (int)0.8 * width;
     if ((x + width +extra)> 640) {
         width1 = 640 - x + extra;
         x1 = x - extra;
@@ -272,7 +272,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     vector< Rect > detectionsCascada;
     vector< Rect > detectionsFinal;
     Mat imgAux;
-	Mat imgROI;
+	//Mat imgROI;
     Mat imgSVM;
     Mat imgSVMBLUR;
 	Mat imgSVMF;
@@ -304,10 +304,10 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 	//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
     vector<Rect>detectionDup;
     detectionDup = detectionsCascada;
-    detectionsCascada.insert(detections2.end(), detectionDup.begin(), detectionDup.end());
+    detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
 
     cout << "\n number of detections: " << (int)detectionsCascada.size();
-    if ((int(detections2.size() > 0))) {
+    if ((int(detectionsCascada.size() > 0))) {
         *encontro = true;
 		//Descomentar para usar las máquinas de soporte vectorial
         //Sin Validacion gana 50 ms aproximadamente
@@ -359,7 +359,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 		std_msgs::Header header; 
 		//header.seq = counter; 
 		header.stamp = ros::Time::now(); 
-		img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_8UC1, img1);
+		img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_8UC1, imgGRAY);
         img_bridge.toImageMsg(img_msg); 
 		detec_publisher.publish(img_msg); 
     }
@@ -599,9 +599,9 @@ int main(int argc, char** argv)
 		ros::spinOnce();               
 		current_time = ros::Time::now();
 		std::cout<<"\n Inicio "<<current_time;
-		begin2 = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point begin2 = std::chrono::steady_clock::now();
 		
-		Mat img2;
+		Mat imgF;
 		int numberO = (int)objetos.size();
 		vector<Rect> detections;
 		int numberD;
@@ -648,7 +648,7 @@ int main(int argc, char** argv)
 						numberD++;
 					}
 					else{
-						img2 = img;
+						imgF = img;
 					}
 				}
 				
@@ -699,12 +699,12 @@ int main(int argc, char** argv)
 				if (i == ultimoFrame[m]) {
 					//La i se quita, solo para guardar las imagenes
 					//Considerar ultimo frame para ya no calcularlo ej i-5
-					kalman(kalmans[m], objetos[m], img2,i,true,PrediccionActual,lastPrediction,&a);
+					kalman(filtrosK[m], objetos[m], imgF,i,true,PrediccionActual,lastPrediction,&a);
 					filtrosK[m] = a;
 				}
 				else {
 					if (i - ultimoFrame[m] < 15) {
-						kalman(kalmans[m], objetos[m], img2, i, false,PrediccionActual,lastPrediction,&a);
+						kalman(filtrosK[m], objetos[m], imgF, i, false,PrediccionActual,lastPrediction,&a);
 						filtrosK[m] = a;
 					}
 					else
@@ -724,7 +724,7 @@ int main(int argc, char** argv)
 		end = std::chrono::steady_clock::now();
 		std::cout << "\nTiempo total kalman = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		end2 = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point end2 = std::chrono::steady_clock::now();
 		std::cout << "\nTiempo por frame = " << std::chrono::duration_cast<std::chrono::milliseconds>(end2 - begin2).count() << "[ms]" << std::endl;
 
 		std::cout<<"\n Fin"<<ros::Time::now();
