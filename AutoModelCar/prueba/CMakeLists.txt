@@ -145,7 +145,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/prueba_node.cpp)
 add_executable(kalman src/kalman.cpp)
-
+add_executable(detecRastreoSim src/detecRastreoSim.cpp)
 add_executable(mov src/mov.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,8 +162,8 @@ add_executable(mov src/mov.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(kalman ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
-target_link_libraries(mov ${catkin_LIBRARIES})
+target_link_libraries(detecRastreoSim ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(mov ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 #############
 ## Install ##
