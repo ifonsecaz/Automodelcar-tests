@@ -572,7 +572,7 @@ int main(int argc, char** argv)
     vector<KalmanFilter> filtrosK;
     cout << "\n svm cargada";
 	
-    glob(testIm, files);
+    //glob(testIm, files);
     int cont = 5;
 	int i=0;
 	 
