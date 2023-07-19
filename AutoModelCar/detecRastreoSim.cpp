@@ -297,7 +297,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 
 	//Se realiza la detección de cascada
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
+    carC.detectMultiScale(imgROI, detectionsCascada, 1.05, 1, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Time detect cascade " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
