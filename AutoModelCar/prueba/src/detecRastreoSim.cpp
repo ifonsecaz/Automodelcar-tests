@@ -301,7 +301,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 
 	//Se realiza la detección de cascada
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
+    carC.detectMultiScale(imgROI, detectionsCascada, 1.05, 1, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     //std::cout << "Time detect cascade " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
@@ -673,7 +673,7 @@ int main(int argc, char** argv)
 				while (k < objetos.size() & !resp) {
 					//localizo el centro
 					//Identificar si es el mismo vehiculo entre dos frames
-					if (abs((detections[j].x+(detections[j].width/2))-(objetos[k].x+(objetos[k].width/2)))<=30 && abs((detections[j].y+(detections[j].height/2)) - (objetos[k].y+(objetos[k].height/2))) <= 30) {
+					if (abs((detections[j].x+(detections[j].width/2))-(objetos[k].x+(objetos[k].width/2)))<=40 && abs((detections[j].y+(detections[j].height/2)) - (objetos[k].y+(objetos[k].height/2))) <= 40) {
 						resp = true; //Ya esta
 					}
 					k++;
