@@ -59,13 +59,63 @@ int evadir;
 int f1=0;
 sensor_msgs::PointCloud2 msg2;
 int16_t esquiva;
-vector<vector<Rect>> deteccionesA; //Las detecciones ya estan actualizadas
+std::vector<vector<Rect>> deteccionesA; //Las detecciones ya estan actualizadas
 int numDet;
-vector<int> distancias;
+std::vector<int> distancias;
 
 std::vector<float> xA; // o double
 std::vector<float> yA;
 std::vector<float> zA;
+
+void esquivaCallback()
+{	
+  //esquiva=msg.data;
+  //ROS_INFO_STREAM("Esquivar: ");
+  //suscribe a detecciones dan el centro
+  //3 carriles->2 rectas
+  //ec1 m -1.17, b 619
+  double m=1.62;
+  double b=-137.5;
+  double m2=-1.65;
+  double b2=793;
+  int x0;
+  int y0;
+  int yC;
+  int yC2;
+  //y0 x0
+  esquiva=0;
+  ROS_INFO_STREAM("REC numDet"<<numDet);
+  
+  for(int i=0;i<numDet;i++){
+  	for(int j=0;j<9;j++){
+  		x0=deteccionesA[i][j].x+(int)deteccionesA[i][j].width/2;
+  		y0=400-(deteccionesA[i][j].y+(int)deteccionesA[i][j].height/2);
+  		yC=m*x0+b;
+  		yC2=m2*x0+b2;
+  		std::cout << "y: "<<y0<<" x: "<<x0<<" yC "<<yC<<" yC2 "<<yC2;
+  		if(y0<157){//155
+	  		if(y0<yC and y0<yC2){
+  				esquiva=1;
+  				termino=1;
+  				ROS_INFO_STREAM("Esquivar ");
+  			}//mismo carril	
+  		}
+  	}
+  }
+//  yC=m*x0+b
+  //ec2 m 1.16, b -405.28
+  //yC2=m*x0+b
+  //if(y0>yC and y0<yC2)
+  //obs en carril 2
+  //if(y0<yC)
+  //carril 1
+  //if(y0>yC2)
+  //carril 3
+  /*if(termino==0){
+  	evadir=0;
+  	termino=1;
+  }*/
+}
 
 void camaraRGBCallback(const sensor_msgs::PointCloud2& msg)
 {
@@ -86,7 +136,8 @@ void deteccionesCallback(const prueba::detecArray& msg)
   	}
   	deteccionesA.push_back(deteccionesInd);
   }
-  
+  esquivaCallback();
+
 }
 
 void distancia()
@@ -156,44 +207,23 @@ void distancia()
   }
 }
 
-void esquivaCallback(const std_msgs::Int16& msg)
-{	
-  esquiva=msg.data;
-  ROS_INFO_STREAM("Esquivar: ");
-  //suscribe a detecciones dan el centro
-  //3 carriles->2 rectas
-  //ec1 m -1.17, b 619
-  //y0 x0
-  //yC=m*x0+b
-  //ec2 m 1.16, b -405.28
-  //yC2=m*x0+b
-  //if(y0>yC and y0<yC2)
-  //obs en carril 2
-  //if(y0<yC)
-  //carril 1
-  //if(y0>yC2)
-  //carril 3
-  if(termino==0){
-  	evadir=0;
-  	termino=1;
-  }
-}
+
 
 void movimiento(int cont){
 	ros::NodeHandle nh ("~");
-	velocity_publisher = nh.advertise<std_msgs::Int16>("/AutoNOMOS_mini/manual_control/speed", 1);
-        steering_publisher = nh.advertise<std_msgs::Int16>("/AutoNOMOS_mini/manual_control/steering", 1);
+	velocity_publisher = nh.advertise<std_msgs::Int16>("/a0/manual_control/speed", 1);//AutoNOMOS_mini/manual_control/speed
+        steering_publisher = nh.advertise<std_msgs::Int16>("/a0/manual_control/steering", 1);
 	std_msgs::Int16 velocity_message;
   	std_msgs::Int16 steering_message;
-	if(cont<160){
-		if(esquiva==carril && evadir<40){
+	if(cont<220){
+		if((esquiva==1 or termino!=0)&& evadir<70){
 		    	ROS_INFO_STREAM("CambiandoCarril");
 			if(carril==1){
 				if(f1==0){
 					velocity_message.data=-80;
 					steering_message.data=20;
 					ncarril=2;	
-					if(evadir>20){
+					if(evadir>35){
 						f1=1;
 					}
 				}
@@ -208,7 +238,7 @@ void movimiento(int cont){
 						velocity_message.data=-80;
 						steering_message.data=160;	
 						ncarril=2;
-						if(evadir>20){
+						if(evadir>35){
 							f1=1;
 						}
 					}
@@ -222,7 +252,7 @@ void movimiento(int cont){
 						velocity_message.data=-80;
 						steering_message.data=20;	
 						ncarril=1;
-						if(evadir>20){
+						if(evadir>35){
 							f1=1;
 						}
 					}
@@ -232,11 +262,14 @@ void movimiento(int cont){
 					}
 				}
 			}
+			    	evadir=evadir+1;
 		}
 		else{
 		velocity_message.data=-100;
     		steering_message.data=90;
     		termino=0;
+    		    	evadir=0;
+    		esquiva=0;
     		carril=ncarril;
     		f1=0;
     		}
@@ -260,7 +293,7 @@ void movimiento(int cont){
 	}
 	velocity_publisher.publish(velocity_message);
     	steering_publisher.publish(steering_message);
-    	evadir=evadir+1;
+
     	ROS_INFO_STREAM("Velocidad: " << velocity_message << " Steering: " << steering_message);
 }
 
@@ -269,8 +302,8 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "mov_carro");
 
   ros::NodeHandle nh("~");
-  ros::Subscriber camara_sub = nh.subscribe("/depth/points", 10, camaraRGBCallback);
-  ros::Subscriber esquiva = nh.subscribe("/obs", 10, esquivaCallback);
+  ros::Subscriber camara_sub = nh.subscribe("/app/camera/points", 10, camaraRGBCallback);///depth/points
+  //ros::Subscriber esquiva = nh.subscribe("/obs", 10, esquivaCallback);
   ros::Subscriber detecciones = nh.subscribe("/detecciones", 10, deteccionesCallback);
 
   ros::Time current_time, last_time;
@@ -289,7 +322,7 @@ int main(int argc, char** argv){
   sleep(2);
   while(nh.ok()){
   
-    if(cont>340){
+    if(cont>400){
     	cont=0;
     }
     ros::spinOnce();               // check for incoming messages
