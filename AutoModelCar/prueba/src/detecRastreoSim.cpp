@@ -673,7 +673,7 @@ int main(int argc, char** argv)
 				while (k < objetos.size() & !resp) {
 					//localizo el centro
 					//Identificar si es el mismo vehiculo entre dos frames
-					if (abs((detections[j].x+(detections[j].width/2))-(objetos[k].x+(objetos[k].width/2)))<=40 && abs((detections[j].y+(detections[j].height/2)) - (objetos[k].y+(objetos[k].height/2))) <= 40) {
+					if (abs((detections[j].x+(detections[j].width/2))-(objetos[k].x+(objetos[k].width/2)))<=50 && abs((detections[j].y+(detections[j].height/2)) - (objetos[k].y+(objetos[k].height/2))) <= 50) {
 						resp = true; //Ya esta
 					}
 					k++;
