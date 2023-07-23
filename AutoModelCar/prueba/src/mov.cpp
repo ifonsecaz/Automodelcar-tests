@@ -216,14 +216,14 @@ void movimiento(int cont){
 	std_msgs::Int16 velocity_message;
   	std_msgs::Int16 steering_message;
 	if(cont<220){
-		if((esquiva==1 or termino!=0)&& evadir<70){
+		if((esquiva==1 or termino!=0)&& evadir<66){
 		    	ROS_INFO_STREAM("CambiandoCarril");
 			if(carril==1){
 				if(f1==0){
 					velocity_message.data=-80;
 					steering_message.data=20;
 					ncarril=2;	
-					if(evadir>35){
+					if(evadir>33){
 						f1=1;
 					}
 				}
@@ -238,7 +238,7 @@ void movimiento(int cont){
 						velocity_message.data=-80;
 						steering_message.data=160;	
 						ncarril=2;
-						if(evadir>35){
+						if(evadir>33){
 							f1=1;
 						}
 					}
@@ -252,7 +252,7 @@ void movimiento(int cont){
 						velocity_message.data=-80;
 						steering_message.data=20;	
 						ncarril=1;
-						if(evadir>35){
+						if(evadir>33){
 							f1=1;
 						}
 					}
