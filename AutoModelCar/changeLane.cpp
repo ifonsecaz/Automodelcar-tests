@@ -215,15 +215,15 @@ void movimiento(int cont){
         steering_publisher = nh.advertise<std_msgs::Int16>("/a0/manual_control/steering", 1);
 	std_msgs::Int16 velocity_message;
   	std_msgs::Int16 steering_message;
-	if(cont<220){
-		if((esquiva==1 or termino!=0)&& evadir<68){
+	//if(cont<220){
+		if((esquiva==1 or termino!=0)&& evadir<70){
 		    	ROS_INFO_STREAM("CambiandoCarril");
 			if(carril==1){
 				if(f1==0){
 					velocity_message.data=-80;
 					steering_message.data=20;
 					ncarril=2;	
-					if(evadir>34){
+					if(evadir>35){
 						f1=1;
 					}
 				}
@@ -238,7 +238,7 @@ void movimiento(int cont){
 						velocity_message.data=-80;
 						steering_message.data=160;	
 						ncarril=2;
-						if(evadir>34){
+						if(evadir>35){
 							f1=1;
 						}
 					}
@@ -250,30 +250,38 @@ void movimiento(int cont){
 				else{
 					if(f1==0){
 						velocity_message.data=-80;
-						steering_message.data=20;	
+						steering_message.data=160;	
 						ncarril=1;
-						if(evadir>34){
+						if(evadir>35){
 							f1=1;
 						}
 					}
 					else{
 						velocity_message.data=-80;
-						steering_message.data=160;
+						steering_message.data=20;
 					}
 				}
 			}
 			    	evadir=evadir+1;
+			    	velocity_publisher.publish(velocity_message);
+    				steering_publisher.publish(steering_message);
 		}
 		else{
-		velocity_message.data=-100;
-    		steering_message.data=90;
+
+    		if(evadir==68){
+    		    		steering_message.data=90;
+    		    		velocity_message.data=-100;
+    		    		velocity_publisher.publish(velocity_message);
+    				steering_publisher.publish(steering_message);
+    		}
+
     		termino=0;
     		    	evadir=0;
     		esquiva=0;
     		carril=ncarril;
     		f1=0;
     		}
-	}
+	/*}
 	else{
 		if(carril==1){
 			velocity_message.data=-80;
@@ -290,9 +298,8 @@ void movimiento(int cont){
     			}
     		}
     		
-	}
-	velocity_publisher.publish(velocity_message);
-    	steering_publisher.publish(steering_message);
+	}*/
+	
 
     	ROS_INFO_STREAM("Velocidad: " << velocity_message << " Steering: " << steering_message);
 }
@@ -321,10 +328,11 @@ int main(int argc, char** argv){
   ros::Rate r(5);
   sleep(2);
   while(nh.ok()){
-  
+  /*
     if(cont>400){
     	cont=0;
     }
+    */
     ros::spinOnce();               // check for incoming messages
     current_time = ros::Time::now();
     last_time = current_time;
