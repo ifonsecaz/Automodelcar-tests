@@ -147,6 +147,7 @@ include_directories(
 add_executable(kalman src/kalman.cpp)
 add_executable(detecRastreoSim src/detecRastreoSim.cpp)
 add_executable(mov src/mov.cpp)
+add_executable(changeLane src/changeLane.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -164,7 +165,7 @@ add_executable(mov src/mov.cpp)
 target_link_libraries(kalman ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(detecRastreoSim ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 target_link_libraries(mov ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-
+target_link_libraries(changeLane ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 #############
 ## Install ##
 #############
