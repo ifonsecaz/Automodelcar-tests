@@ -1,69 +1,118 @@
-# toplevel CMakeLists.txt for a catkin workspace
-# catkin/cmake/toplevel.cmake
+cmake_minimum_required(VERSION 2.8.3)
+project(autonomos_gazebo_simulation)
 
-cmake_minimum_required(VERSION 3.0.2)
+add_compile_options(-std=c++11)
 
-project(Project)
+find_package(catkin REQUIRED COMPONENTS 
+	roscpp
+	std_msgs
+	geometry_msgs
+	cmake_modules REQUIRED
+	gazebo_msgs
+	)
 
-set(CATKIN_TOPLEVEL TRUE)
 
-# search for catkin within the workspace
-set(_cmd "catkin_find_pkg" "catkin" "${CMAKE_SOURCE_DIR}")
-execute_process(COMMAND ${_cmd}
-  RESULT_VARIABLE _res
-  OUTPUT_VARIABLE _out
-  ERROR_VARIABLE _err
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  ERROR_STRIP_TRAILING_WHITESPACE
+catkin_package(
+
+	LIBRARIES
+	CATKIN_DEPENDS
+    	roscpp
+    	sensor_msgs
+    	std_msgs
+	DEPENDS
 )
-if(NOT _res EQUAL 0 AND NOT _res EQUAL 2)
-  # searching fot catkin resulted in an error
-  string(REPLACE ";" " " _cmd_str "${_cmd}")
-  message(FATAL_ERROR "Search for 'catkin' in workspace failed (${_cmd_str}): ${_err}")
-endif()
 
-# include catkin from workspace or via find_package()
-if(_res EQUAL 0)
-  set(catkin_EXTRAS_DIR "${CMAKE_SOURCE_DIR}/${_out}/cmake")
-  # include all.cmake without add_subdirectory to let it operate in same scope
-  include(${catkin_EXTRAS_DIR}/all.cmake NO_POLICY_SCOPE)
-  add_subdirectory("${_out}")
+###########
+## Build ##
+###########
 
-else()
-  # use either CMAKE_PREFIX_PATH explicitly passed to CMake as a command line argument
-  # or CMAKE_PREFIX_PATH from the environment
-  if(NOT DEFINED CMAKE_PREFIX_PATH)
-    if(NOT "$ENV{CMAKE_PREFIX_PATH}" STREQUAL "")
-      if(NOT WIN32)
-        string(REPLACE ":" ";" CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
-      else()
-        set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
-      endif()
-    endif()
-  endif()
+include_directories(include
+			${catkin_INCLUDE_DIRS} 
+			)
 
-  # list of catkin workspaces
-  set(catkin_search_path "")
-  foreach(path ${CMAKE_PREFIX_PATH})
-    if(EXISTS "${path}/.catkin")
-      list(FIND catkin_search_path ${path} _index)
-      if(_index EQUAL -1)
-        list(APPEND catkin_search_path ${path})
-      endif()
-    endif()
-  endforeach()
+link_directories(
+	${Boost_LIBRARY_DIRS}
+)
 
-  # search for catkin in all workspaces
-  set(CATKIN_TOPLEVEL_FIND_PACKAGE TRUE)
-  find_package(catkin QUIET
-    NO_POLICY_SCOPE
-    PATHS ${catkin_search_path}
-    NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-  unset(CATKIN_TOPLEVEL_FIND_PACKAGE)
+# add_executable(tf2_broadcaster_node src/tf2_broadcaster_node.cpp)
+# add_executable(robot_pose_publisher src/robot_pose_publisher.cpp)
 
-  if(NOT catkin_FOUND)
-    message(FATAL_ERROR "find_package(catkin) failed. catkin was neither found in the workspace nor in the CMAKE_PREFIX_PATH. One reason may be that no ROS setup.sh was sourced before.")
-  endif()
-endif()
+# target_link_libraries(tf2_broadcaster_node ${catkin_LIBRARIES})
+# target_link_libraries(robot_pose_publisher ${catkin_LIBRARIES})
 
-catkin_workspace()
+#############
+## Install ##
+#############
+
+# all install targets should use catkin DESTINATION variables
+# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
+
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+# install(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark executables and/or libraries for installation
+# install(TARGETS AutoNOMOS_simulation AutoNOMOS_simulation_node
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
+
+## Install worlds
+# set(AUTONOMOS_DEST_PATH "${CATKIN_GLOBAL_SHARE_DESTINATION}/AutoNOMOS")
+message("WORLD PATH: ${CATKIN_GLOBAL_SHARE_DESTINATION}")
+install(DIRECTORY
+	worlds/
+  	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/worlds
+)
+
+## Install models
+install(DIRECTORY
+	models/
+  	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/models/
+)
+
+# install(DIRECTORY
+# 	models/straight_road/
+#   	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/models/straight_road
+# )
+
+# install(DIRECTORY
+# 	models/curved_road/
+#   	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/models/curved_road
+# )
+
+# install(DIRECTORY
+# 	models/parking_space/
+#   	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/models/parking_space
+# )
+
+## Launch files
+install(DIRECTORY
+	launch/
+  	DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION}/launch
+)
+
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_AutoNOMOS_simulation.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)
