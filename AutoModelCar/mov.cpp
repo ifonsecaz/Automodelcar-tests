@@ -56,7 +56,7 @@ int carril=2; //3 c
 int ncarril=2;
 int termino=0;
 int evadir;
-int f1=0;
+
 sensor_msgs::PointCloud2 msg2;
 int16_t esquiva;
 std::vector<vector<Rect>> deteccionesA; //Las detecciones ya estan actualizadas
@@ -219,13 +219,11 @@ void movimiento(int cont){
 		if((esquiva==1 or termino!=0)&& evadir<68){
 		    	ROS_INFO_STREAM("CambiandoCarril");
 			if(carril==1){
-				if(f1==0){
+				if(evadir<35){
 					velocity_message.data=-80;
 					steering_message.data=20;
 					ncarril=2;	
-					if(evadir>34){
-						f1=1;
-					}
+					
 				}
 				else{
 					velocity_message.data=-80;
@@ -234,13 +232,11 @@ void movimiento(int cont){
 			}
 			else{
 				if(carril==3){
-					if(f1==0){
+					if(evadir<35){
 						velocity_message.data=-80;
 						steering_message.data=160;	
 						ncarril=2;
-						if(evadir>34){
-							f1=1;
-						}
+						
 					}
 					else{
 						velocity_message.data=-80;
@@ -248,13 +244,11 @@ void movimiento(int cont){
 					}
 				}
 				else{
-					if(f1==0){
+					if(evadir<35){
 						velocity_message.data=-80;
 						steering_message.data=20;	
 						ncarril=1;
-						if(evadir>34){
-							f1=1;
-						}
+						
 					}
 					else{
 						velocity_message.data=-80;
@@ -271,7 +265,7 @@ void movimiento(int cont){
     		    	evadir=0;
     		esquiva=0;
     		carril=ncarril;
-    		f1=0;
+    		
     		}
 	}
 	else{
