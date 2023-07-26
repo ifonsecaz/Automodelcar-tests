@@ -150,7 +150,8 @@ bool VeinsInetSampleApplication::startApplication()
         }
 */
 
-    //SIM4
+    //SIM2
+    //wait untill all nodes have appeared
     srand((unsigned) time(NULL));
     double cont=0;
     int cont2=0;
