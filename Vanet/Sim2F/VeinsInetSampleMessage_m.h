@@ -62,7 +62,27 @@ class VEINS_INET_API VeinsInetSampleMessage : public ::inet::FieldsChunk
     const char* msgr[9];
 
     int msgRec;
-    int lastC;
+    double lastC;
+
+    int env0;
+    int env1;
+    int env2;
+    int env3;
+    int env4;
+    int env5;
+    int env6;
+    int env7;
+    int env8;
+
+    int renv0;
+    int renv1;
+    int renv2;
+    int renv3;
+    int renv4;
+    int renv5;
+    int renv6;
+    int renv7;
+    int renv8;
 
     const char* pastVal0;
     const char* pastVal1;
@@ -101,6 +121,24 @@ class VEINS_INET_API VeinsInetSampleMessage : public ::inet::FieldsChunk
         const char* pastVal73;
         const char* pastVal83;
     const char* pastVal9;
+    const char* pastVal04;
+        const char* pastVal14;
+        const char* pastVal24;
+        const char* pastVal34;
+        const char* pastVal44;
+        const char* pastVal54;
+        const char* pastVal64;
+        const char* pastVal74;
+        const char* pastVal84;
+        const char* pastVal05;
+            const char* pastVal15;
+            const char* pastVal25;
+            const char* pastVal35;
+            const char* pastVal45;
+            const char* pastVal55;
+            const char* pastVal65;
+            const char* pastVal75;
+            const char* pastVal85;
 
     VeinsInetSampleMessage();
     VeinsInetSampleMessage(const VeinsInetSampleMessage& other);
