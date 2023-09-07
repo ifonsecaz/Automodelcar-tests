@@ -14,7 +14,13 @@
 #include <math.h>
 #include <cmath>
 //#include <chrono>
+//#include <boost/chrono/chrono.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include "boost/date_time/time_zone_base.hpp"
 
+#include "vision_camara/detec.h"
+#include "vision_camara/detecTiempos.h"
+#include "vision_camara/detecArray.h"
 
 using namespace cv;
 using namespace std;
@@ -80,13 +86,17 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
     hog.L2HysThreshold = 2.0000000000000001e-01;
     hog.gammaCorrection = 1;
     hog.nlevels = 64;
-    hog.signedGradient = 0;
+    //hog.signedGradient = 0;
 	
 	//Se realiza la detección con el filtro de cascada sobre la imagen completa, considera un tamaño mínimo de 40x40 pixeles, y máximo de 200x200, va incrementando el tamaño de la ventana por 1.1
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    carC.detectMultiScale(imgGRAY, detectionsCascada, 1.1, 2, 0, Size(40, 40), Size(200, 200));
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    
+    //std::chrono::monotonic_clock::time_point begin = std::chrono::monotonic_clock::now();
+    boost::posix_time::ptime begin =boost::posix_time::microsec_clock::local_time();
+	carC.detectMultiScale(imgGRAY, detectionsCascada, 1.1, 2, 0, Size(40, 40), Size(200, 200));
+    //std::chrono::monotonic_clock::time_point end = std::chrono::monotonic_clock::now();
+    boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+	boost::posix_time::time_duration diff = end - begin;
+    cout << "Time detect cascade " << diff.total_milliseconds() << "[ms]" << std::endl;
+	
     cout << "\n number of detections: " << (int)detectionsCascada.size();
     int aux = 0;
 	//Cada detección de cascada se evalúa, primero se toma un área alrededor un 20% más grande
@@ -147,10 +157,11 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
     vector< float > descriptorsSVM;
     imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
-    float result1 = svm->predict(descriptorsSVM); //usar svm2
+    Mat fm=Mat(1,descriptorsSVM.size(),CV_32FC1,descriptorsSVM.data()).clone();
+    float result1 = svm->CvSVM::predict(fm); //usar svm2
     float result;
     if (result1 < 0) { 
-        result = svm2->predict(descriptorsSVM);
+        result = svm2->CvSVM::predict(fm);
     }
     else {
         result = result1;
@@ -170,10 +181,11 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
     GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
     imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
-    result1 = svm->predict(descriptorsSVM); 
+    fm=Mat(1,descriptorsSVM.size(),CV_32FC1,descriptorsSVM.data()).clone();
+    result1 = svm->CvSVM::predict(fm); 
     result;
     if (result1 < 0) {
-        result = svm2->predict(descriptorsSVM);
+        result = svm2->CvSVM::predict(fm);
     }
     else {
         result = result1;
@@ -292,10 +304,13 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     imgGRAY(Rect(x1,y1,width1,height1)).copyTo(imgROI);
 
 	//Se realiza la detección de cascada
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    //std::cout << "Time detect cascade " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    //std::chrono::monotonic_clock::time_point begin = std::chrono::monotonic_clock::now();
+   boost::posix_time::ptime begin = boost::posix_time::microsec_clock::local_time();
+	carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
+    //std::chrono::monotonic_clock::time_point end = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+	boost::posix_time::time_duration diff = end - begin;
+    cout << "Time detect cascade " << diff.total_milliseconds() << "[ms]" << std::endl;
 
 	//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
     vector<Rect>detectionDup;
@@ -369,10 +384,16 @@ Guarda una imagen con la predicción
 Recibe el filtro, la deteccion, la imagen, un contador, y un booleano para indicar si la detección se encontró en el frame actual 
 Devuelve el filtro actualizado
 */
-void kalman(KalmanFilter kf, Rect detections, Mat img,int i,bool found, KalmanFilter* act) {
+void kalman(KalmanFilter kf, Rect detections, Mat img,int i,bool found, boost::posix_time::ptime lastP,boost::posix_time::ptime Pactual, KalmanFilter* act) {
 	//     /pred Nombre del tópico con el que se publica la imagen con la predicción
 	ros::NodeHandle nh("~");
     detec_publisherk = nh.advertise<sensor_msgs::Image>("/pred",1);
+	
+	boost::posix_time::time_duration   d = Pactual-lastP;
+    //double dt = std::chrono::duration<double>(d).count();
+	double dt= d.total_milliseconds();
+    kf.transitionMatrix = (Mat_<float>(6, 6) << 1, 0, dt, 0, 0, 0, 0, 1, 0, dt, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+	
 	
     //Crea las matrices de estados y de mediciones
     Mat meas(4, 1, CV_32F);
@@ -532,39 +553,46 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh("~");
 	ros::Subscriber camara_sub = nh.subscribe("/app/camera/rgb/image_raw", 10, camaraRGBCallback);
-
+	  
+	ros::Publisher detecciones = nh.advertise<vision_camara::detecArray>("/detecciones",1);//
+	
 	ros::Time current_time, last_time;
 	current_time = ros::Time::now();
 	last_time = ros::Time::now();
 	
 	ros::Rate loop_rate(RATE_HZ);
 
-    String cascadaFile = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/cascade.xml"; 
-    String svmFile = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/my_svmML2C3.xml";
-    String svmFile2 = "/home/israel/EK_AutoNOMOS_Sim/src/prueba/src/my_svmML2L3.xml"; 
+    String cascadaFile = "/home/workspace/catkin_ws1/src/vision_camara/src/cascade.xml"; 
+    String svmFile = "/home/workspace/catkin_ws1/src/vision_camara/src/my_svmML2C3.xml";
+    String svmFile2 = "/home/workspace/catkin_ws1/src/vision_camara/src/my_svmML2L3.xml"; 
 
     cout << "Iniciando detector..." << endl;
 	
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-   
+	boost::posix_time::ptime lastPrediction;
+	boost::posix_time::ptime PrediccionActual;
+	
+    //std::chrono::monotonic_clock::time_point begin = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime begin = boost::posix_time::microsec_clock::local_time();
 	//Se carga la máquina de soporte vectorial
     CvSVM *svm = new CvSVM;
 	svm->load(svmFile.c_str());
 	CvSVM *svm2 = new CvSVM;
 	svm2->load(svmFile.c_str());
+	
+    //std::chrono::monotonic_clock::time_point end = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::time_duration msdiff = end-begin;
+	std::cout << "\nCargar SVM Time: " << msdiff.total_milliseconds() << "[ms]" << std::endl;
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-    std::cout << "\nCargar SVM Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
-    begin = std::chrono::steady_clock::now();
+    //begin = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime begin1 = boost::posix_time::microsec_clock::local_time();
 	
 	//Se carga el filtro de cascada
     CascadeClassifier carC;
     carC.load(cascadaFile);
-    end = std::chrono::steady_clock::now();
-
-    std::cout << "\nCargar cascada: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    boost::posix_time::ptime end1 =boost::posix_time::microsec_clock::local_time();
+	msdiff = end1-begin1;
+    std::cout << "\nCargar cascada: " << msdiff.total_milliseconds() << "[ms]" << std::endl;
 
 	//Vectores para guardar los objetos detectados, cuando fue el último frame en que aparecio, y sus filtros de kalman asociados
     vector<Rect> objetos;
@@ -582,14 +610,18 @@ int main(int argc, char** argv)
     ros::spinOnce();               
     current_time = ros::Time::now();
 	std::cout<<"\n Inicio "<<current_time;
-    std::chrono::steady_clock::time_point begin2 = std::chrono::steady_clock::now();
+    
+	boost::posix_time::ptime begin2 =boost::posix_time::microsec_clock::local_time();
+	//std::chrono::monotonic_clock::time_point begin2 = boost::chrono::monotonic_clock::now();
 	
 	Mat imgF;
     int numberO = (int)objetos.size();
     vector<Rect> detections;
     int numberD;
 	
-    begin = std::chrono::steady_clock::now();
+    //begin = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime begin3 = boost::posix_time::microsec_clock::local_time();
+
 	if (cont == 5) { //cada 5 frames deteccion completa
 		//detecVentana(svm, carC, img, i, &imgF, &numberD, &detections); //cargar svm7
         detecVentana(svm, svm2,carC, img, i, &imgF, &numberD, &detections); //cargar svm7
@@ -638,10 +670,13 @@ int main(int argc, char** argv)
 		}
 		cont++;
 	}
-	end = std::chrono::steady_clock::now();
-
-	std::cout << "\nTime total deteccion = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-	begin = std::chrono::steady_clock::now();
+	//end = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime end3 = boost::posix_time::microsec_clock::local_time();
+	msdiff = end3-begin3;
+	std::cout << "\nTime total deteccion = " << msdiff.total_milliseconds()<< "[ms]" << std::endl;
+	
+	//begin = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime begin4 = boost::posix_time::microsec_clock::local_time();
 
 	for (size_t j = 0; j < numberD; j++) {
             //Varianza, +-20 pixeles es el mismo objeto
@@ -674,17 +709,19 @@ int main(int argc, char** argv)
         }
         int m = 0;
 		KalmanFilter a;
+		
+		PrediccionActual =boost::posix_time::microsec_clock::local_time();
 
         while (m < numberO) {
             if (i == ultimoFrame[m]) {
                 //La i se quita, solo para guardar las imagenes
                 //Considerar ultimo frame para ya no calcularlo ej i-5
-                kalman(filtrosK[m], objetos[m], imgF,i,true,&a);
+                kalman(filtrosK[m], objetos[m], imgF,i,true,PrediccionActual,lastPrediction,&a);
 				filtrosK[m] = a;
             }
             else {
                 if (i - ultimoFrame[m] < 15) {
-                    kalman(filtrosK[m], objetos[m], imgF, i, false,&a);
+                    kalman(filtrosK[m], objetos[m], imgF, i, false,PrediccionActual,lastPrediction,&a);
 					filtrosK[m] = a;
                 }
                 else
@@ -698,12 +735,78 @@ int main(int argc, char** argv)
             }
             m++;
         }
-    
-	end = std::chrono::steady_clock::now();
-    std::cout << "\nTiempo total kalman = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+		
+	vision_camara::detecArray det; //
 
-    std::chrono::steady_clock::time_point end2 = std::chrono::steady_clock::now();
-	std::cout << "\nTiempo por frame = " << std::chrono::duration_cast<std::chrono::milliseconds>(end2 - begin2).count() << "[ms]" << std::endl;
+	det.numDetec=numberO;
+	
+	m=0;
+	while(m<numberO){
+	    vision_camara::detecTiempos detT;
+		KalmanFilter c;
+		c.controlMatrix = filtrosK[m].controlMatrix.clone();
+		c.errorCovPost = filtrosK[m].errorCovPost.clone();
+		c.errorCovPre = filtrosK[m].errorCovPre.clone();
+		c.gain = filtrosK[m].gain.clone();
+		c.measurementMatrix = filtrosK[m].measurementMatrix.clone();
+		c.measurementNoiseCov = filtrosK[m].measurementNoiseCov.clone();
+    	c.processNoiseCov = filtrosK[m].processNoiseCov.clone();
+		c.statePost = filtrosK[m].statePost.clone();
+		c.statePre = filtrosK[m].statePre.clone();
+		c.transitionMatrix = filtrosK[m].transitionMatrix.clone();
+		c.temp1 = filtrosK[m].temp1.clone();
+		c.temp2 = filtrosK[m].temp2.clone();
+		c.temp3 = filtrosK[m].temp3.clone();
+		c.temp4 = filtrosK[m].temp4.clone();
+		c.temp5 = filtrosK[m].temp5.clone();
+
+		vision_camara::detec detecInd; 
+		//Rect detecInd;
+		Mat state(6, 1, CV_32F);
+		state = c.predict();
+    		detecInd.width = state.at<float>(4);
+    		detecInd.height = state.at<float>(5);
+    		detecInd.x = state.at<float>(0);
+    		detecInd.y = state.at<float>(1);
+    		c.statePre.copyTo(c.statePost);
+    		c.errorCovPre.copyTo(c.errorCovPost);
+		cout << "\n Nueva";
+		cout << "\n Posicion x: " << detecInd.x << " y: " << detecInd.y;    		
+		detT.posA=detecInd;
+		
+		for(int ki=0;ki<10;ki++){
+		        vision_camara::detec detecInd; 
+			state = c.predict();
+    			detecInd.width = state.at<float>(4);
+    			detecInd.height = state.at<float>(5);
+    			detecInd.x = state.at<float>(0);
+    			detecInd.y = state.at<float>(1);
+    			c.statePre.copyTo(c.statePost);
+    			c.errorCovPre.copyTo(c.errorCovPost);
+    			cout << "\n Posicion x: " << detecInd.x << " y: " << detecInd.y;    		
+			//detT.posSig[ki]=detecInd;
+			detT.posSig.push_back(detecInd);
+		}
+		
+		det.array.push_back(detT);
+		m++;
+		
+	}
+
+    	detecciones.publish(det);  
+			
+	lastPrediction = PrediccionActual;
+    
+	//end = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime end4 =  boost::posix_time::microsec_clock::local_time();
+	msdiff =  end4-begin4;
+    std::cout << "\nTiempo total kalman = " << msdiff.total_milliseconds()  << "[ms]" << std::endl;
+
+    //std::chrono::monotonic_clock::time_point end2 = std::chrono::monotonic_clock::now();
+	boost::posix_time::ptime  end2 = boost::posix_time::microsec_clock::local_time();
+	msdiff =  end2-begin2;
+
+	std::cout << "\nTiempo por frame = " << msdiff.total_milliseconds() << "[ms]" << std::endl;
 
 	std::cout<<"\n Fin"<<ros::Time::now();
 	last_time = current_time;
