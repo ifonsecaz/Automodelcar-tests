@@ -37,6 +37,8 @@ ros::Publisher detec_publisherk; //Publica la imagen con las predicciones
 
 cv_bridge::CvImage img_bridge;
 
+int aC=0;
+
 //Recibe la imagen de la cámara y la convierta a tipo MAT con cv_bridge, ya recorta la altura y se pasa a escala de grises
 void camaraRGBCallback(const sensor_msgs::Image& msg)
 {
@@ -48,6 +50,14 @@ void camaraRGBCallback(const sensor_msgs::Image& msg)
 	img0(Rect(0, 0, 640, ROI)).copyTo(img);
     std::cout << img.channels();
     //std::cout<<"\n Imagen cargada";
+	String a;
+	ostringstream str1;
+    str1 << aC;
+	aC=aC+1;
+    string gcont = str1.str();
+    a = "/root/workspace/imC/test" + gcont + ".jpg";
+
+    imwrite(a, img0);
 }
 
 /*
@@ -113,6 +123,7 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
             imgRec = Mat(detectionsCascada[j].width, detectionsCascada[j].height, CV_64F, 0.0); //CV_64F 
             imgGRAY(Rect(detectionsCascada[j].x, detectionsCascada[j].y, detectionsCascada[j].width, detectionsCascada[j].height)).copyTo(imgRec(Rect(0, 0, detectionsCascada[j].width, detectionsCascada[j].height)));
         }
+		
 		//Para la predicción, la imagen debe ser de 64x64
         resize(imgRec, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 		
@@ -210,7 +221,14 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
 
     *imgF =  imgGRAY; ///
     *detections = detectionsFinal;
+	
+	String a;
+	ostringstream str1;
+    str1 << cont;
+    string gcont = str1.str();
+    a = "/root/workspace/imDet/test" + gcont + ".jpg";
 
+    imwrite(a, imgGRAY);
 	
 	//Se convierte la imagen a sensor_msgs y se publica
 	sensor_msgs::Image img_msg;
@@ -361,6 +379,15 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
         *imgF = imgGRAY; ///
         *detections = Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height);
 		
+		String a;
+		ostringstream str1;
+		str1 << cont;
+		string gcont = str1.str();
+		a = "/root/workspace/imDet/test" + gcont + ".jpg";
+		//a = "/root/workspace/imDet/test" + std::	ing(cont) + ".jpg";
+
+		imwrite(a, imgGRAY);
+		
 		//Se publica la imagen
 		sensor_msgs::Image img_msg;
 		std_msgs::Header header; 
@@ -373,6 +400,15 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     else {
 		//Devuelve la imagen original si no hubo detecciones
         *imgF = imgGRAY;
+		
+		String a;
+		ostringstream str1;
+		str1 << cont;
+		string gcont = str1.str();
+		a = "/root/workspace/imDet/test" + gcont + ".jpg";
+		//a = "/root/workspace/imDet/test" + std::to_string(cont) + ".jpg";
+
+		imwrite(a, imgGRAY);
     }
 
 }
@@ -428,6 +464,14 @@ void kalman(KalmanFilter kf, Rect detections, Mat img,int i,bool found, boost::p
         cv::rectangle(img, predRect, CV_RGB(255, 0, 0), 2);
         cv::rectangle(img, Rect(predRect.x + predRect.width / 2 - 1, predRect.y + predRect.height / 2 - 1, 2, 2), CV_RGB(1, 0, 0), 2);
     }
+	
+	string path = "/root/workspace/imR";
+	ostringstream str1;
+    str1 << i;
+    string gcont = str1.str();
+	String b = path + "/res" + gcont + ".jpg";    //String b = path + "/res" + std::to_string(i) + ".jpg";
+
+    imwrite(b, img);
 
 	sensor_msgs::Image img_msg;
     std_msgs::Header header; 
