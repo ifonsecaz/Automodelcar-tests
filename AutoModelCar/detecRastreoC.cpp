@@ -562,9 +562,9 @@ int main(int argc, char** argv)
 	
 	ros::Rate loop_rate(RATE_HZ);
 
-    String cascadaFile = "/home/workspace/catkin_ws1/src/vision_camara/src/cascade.xml"; 
-    String svmFile = "/home/workspace/catkin_ws1/src/vision_camara/src/my_svmML2C3.xml";
-    String svmFile2 = "/home/workspace/catkin_ws1/src/vision_camara/src/my_svmML2L3.xml"; 
+    String cascadaFile = "/root/workspace/catkin_ws1/src/vision_camara/src/cascade.xml"; 
+    String svmFile = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2C3.xml";
+    String svmFile2 = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2L3.xml"; 
 
     cout << "Iniciando detector..." << endl;
 	
