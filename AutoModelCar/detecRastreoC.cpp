@@ -262,155 +262,162 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
         imgGRAY = img;
     }
 
-    int x1, y1,width1,height1;
-    int extra = (int)0.8 * width;
-    if ((x + width +extra)> 640) {
-        width1 = 640 - x + extra;
-        x1 = x - extra;
-    }
-    else {
-        if ((x-extra)<0) {
-            x1 = 0;
-            width1 = width + extra + x;
-        }
-        else {
-            x1 = x - extra;
-            width1 = width + 2 * extra;
-        }
+	if(x>0&&x<640&&y>0&&y<480&&width>0&&height>0){
+		int x1, y1,width1,height1;
+		int extra = (int)0.8 * width;
+		if ((x + width +extra)> 640) {
+			width1 = 640 - x + extra;
+			x1 = x - extra;
+		}
+		else {
+			if ((x-extra)<0) {
+				x1 = 0;
+				width1 = width + extra + x;
+			}
+			else {
+				x1 = x - extra;
+				width1 = width + 2 * extra;
+			}
 
-    }
-    if (y + height + extra> 480) {
-        height1 = 480 - y + extra;
-        y1 = y - extra;
-    }
-    else {
-        if ((y - extra) < 0) {
-            y1 = 0;
-            height1 = height + extra + y;
-        }
-        else {
-            y1 = y - extra;
-            height1 = height + 2 * extra;
-        }
-    }
-    Mat imgROI = Mat(height1, width1, CV_64F, 0.0);
+		}
+		if (y + height + extra> 480) {
+			height1 = 480 - y + extra;
+			y1 = y - extra;
+		}
+		else {
+			if ((y - extra) < 0) {
+				y1 = 0;
+				height1 = height + extra + y;
+			}
+			else {
+				y1 = y - extra;
+				height1 = height + 2 * extra;
+			}
+		}
+		Mat imgROI = Mat(height1, width1, CV_64F, 0.0);
 
-    vector< Rect > detectionsCascada;
-    vector< Rect > detectionsFinal;
-    Mat imgAux;
-	//Mat imgROI;
-    Mat imgSVM;
-    Mat imgSVMBLUR;
-	Mat imgSVMF;
-    /*
-    //opcional
-    HOGDescriptor hog;
-    hog.winSize = Size(64, 64);
-    hog.blockSize = Size(16, 16);
-    hog.cellSize = Size(8, 8);
-    hog.blockStride = Size(8, 8);
-    hog.nbins = 9;
-    hog.derivAperture = 1;
-    hog.winSigma = 4;
-    //hog.histogramNormType = 0;
-    hog.L2HysThreshold = 2.0000000000000001e-01;
-    hog.gammaCorrection = 1;
-    hog.nlevels = 64;
-    hog.signedGradient = 0;
-    */
-    //Recorto la imagen
-    imgGRAY(Rect(x1,y1,width1,height1)).copyTo(imgROI);
+		vector< Rect > detectionsCascada;
+		vector< Rect > detectionsFinal;
+		Mat imgAux;
+		//Mat imgROI;
+		Mat imgSVM;
+		Mat imgSVMBLUR;
+		Mat imgSVMF;
+		/*
+		//opcional
+		HOGDescriptor hog;
+		hog.winSize = Size(64, 64);
+		hog.blockSize = Size(16, 16);
+		hog.cellSize = Size(8, 8);
+		hog.blockStride = Size(8, 8);
+		hog.nbins = 9;
+		hog.derivAperture = 1;
+		hog.winSigma = 4;
+		//hog.histogramNormType = 0;
+		hog.L2HysThreshold = 2.0000000000000001e-01;
+		hog.gammaCorrection = 1;
+		hog.nlevels = 64;
+		hog.signedGradient = 0;
+		*/
+		//Recorto la imagen
+		imgGRAY(Rect(x1,y1,width1,height1)).copyTo(imgROI);
 
-	//Se realiza la detección de cascada
-    //std::chrono::monotonic_clock::time_point begin = std::chrono::monotonic_clock::now();
-   boost::posix_time::ptime begin = boost::posix_time::microsec_clock::local_time();
-	carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
-    //std::chrono::monotonic_clock::time_point end = std::chrono::monotonic_clock::now();
-	boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
-	boost::posix_time::time_duration diff = end - begin;
-    cout << "Time detect cascade " << diff.total_milliseconds() << "[ms]" << std::endl;
+		//Se realiza la detección de cascada
+		//std::chrono::monotonic_clock::time_point begin = std::chrono::monotonic_clock::now();
+	   boost::posix_time::ptime begin = boost::posix_time::microsec_clock::local_time();
+		carC.detectMultiScale(imgROI, detectionsCascada, 1.1, 2, 0, Size(width*0.4, height*0.4), Size(width1, height1)); //Dado tamano segun prediccion
+		//std::chrono::monotonic_clock::time_point end = std::chrono::monotonic_clock::now();
+		boost::posix_time::ptime end = boost::posix_time::microsec_clock::local_time();
+		boost::posix_time::time_duration diff = end - begin;
+		cout << "Time detect cascade " << diff.total_milliseconds() << "[ms]" << std::endl;
 
-	//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
-    vector<Rect>detectionDup;
-    detectionDup = detectionsCascada;
-    detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
+		//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
+		vector<Rect>detectionDup;
+		detectionDup = detectionsCascada;
+		detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
 
-    cout << "\n number of detections: " << (int)detectionsCascada.size();
-    if ((int(detectionsCascada.size() > 0))) {
-        *encontro = true;
-		//Descomentar para usar las máquinas de soporte vectorial
-        //Sin Validacion gana 50 ms aproximadamente
-        //Con hog 250-300 ms, sin 200-250 ms en VisualStudio
-        /*
-        int aux = 0;
-        for (size_t j = 0; j < detections2.size(); j++)
-        {
-            //opcional
-            //Scalar color = Scalar(0, foundWeights[j] * foundWeights[j] * 200, 0);
-            imgAux = Mat(detections2[j].width, detections2[j].height, CV_64F, 0.0); //CV_64F
-            img2(Rect(detections2[j].x, detections2[j].y, detections2[j].width, detections2[j].height)).copyTo(imgAux(Rect(0, 0, detections2[j].width, detections2[j].height)));
+		cout << "\n number of detections: " << (int)detectionsCascada.size();
+		if ((int(detectionsCascada.size() > 0))) {
+			*encontro = true;
+			//Descomentar para usar las máquinas de soporte vectorial
+			//Sin Validacion gana 50 ms aproximadamente
+			//Con hog 250-300 ms, sin 200-250 ms en VisualStudio
+			/*
+			int aux = 0;
+			for (size_t j = 0; j < detections2.size(); j++)
+			{
+				//opcional
+				//Scalar color = Scalar(0, foundWeights[j] * foundWeights[j] * 200, 0);
+				imgAux = Mat(detections2[j].width, detections2[j].height, CV_64F, 0.0); //CV_64F
+				img2(Rect(detections2[j].x, detections2[j].y, detections2[j].width, detections2[j].height)).copyTo(imgAux(Rect(0, 0, detections2[j].width, detections2[j].height)));
 
-            resize(imgAux, imgClas, Size(64, 64), 0, 0, cv::INTER_AREA);
-            vector< float > descriptors;
-            imgClas.convertTo(imgClas2, CV_8UC3);
-            hog.compute(imgClas2, descriptors, Size(0, 0), Size(0, 0));
-            //Mat HOGFeat_test(1, descriptors.size(), CV_32FC1); //si no funciona o con datos a ml
-            //for (int i = 0; i < descriptors.size(); i++)
-            //    HOGFeat_test.at<float>(0, i) = descriptors.at(i);
-            float result = svm->predict(descriptors);
+				resize(imgAux, imgClas, Size(64, 64), 0, 0, cv::INTER_AREA);
+				vector< float > descriptors;
+				imgClas.convertTo(imgClas2, CV_8UC3);
+				hog.compute(imgClas2, descriptors, Size(0, 0), Size(0, 0));
+				//Mat HOGFeat_test(1, descriptors.size(), CV_32FC1); //si no funciona o con datos a ml
+				//for (int i = 0; i < descriptors.size(); i++)
+				//    HOGFeat_test.at<float>(0, i) = descriptors.at(i);
+				float result = svm->predict(descriptors);
 
-            //float result = svm->predict(HOGFeat_test);
-            cout << "\n result " << result;
-            if (result > 0.3) { //-0.2 o -0.15 ok
-                aux++;
-                //detectionsAux.push_back(detections2[j]);
-                rectangle(img1, Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height), 200, img1.cols / 400 + 1);
-                //img1(Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height)).copyTo(imgZ(Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height)));
-            }
-            //
+				//float result = svm->predict(HOGFeat_test);
+				cout << "\n result " << result;
+				if (result > 0.3) { //-0.2 o -0.15 ok
+					aux++;
+					//detectionsAux.push_back(detections2[j]);
+					rectangle(img1, Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height), 200, img1.cols / 400 + 1);
+					//img1(Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height)).copyTo(imgZ(Rect(x1 + detections2[j].x, y1 + detections2[j].y, detections2[j].width, detections2[j].height)));
+				}
+				//
 
-        }
-        */
-		//Se agregan los rectángulos sobrepuestos, se dibujan sobre la imagen y se guard
-        groupRectangles(detectionsCascada, 1, 0.60);
-        rectangle(imgGRAY, Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height), 200, imgGRAY.cols / 400 + 1); //Quitar si se incluye hog
-        rectangle(imgGRAY, Rect(x1+detectionsCascada[0].x + detectionsCascada[0].width / 2-2, y1+detectionsCascada[0].y + detectionsCascada[0].height / 2-2, 4, 4), 250, imgGRAY.cols / 400 + 1);
+			}
+			*/
+			//Se agregan los rectángulos sobrepuestos, se dibujan sobre la imagen y se guard
+			groupRectangles(detectionsCascada, 1, 0.60);
+			rectangle(imgGRAY, Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height), 200, imgGRAY.cols / 400 + 1); //Quitar si se incluye hog
+			rectangle(imgGRAY, Rect(x1+detectionsCascada[0].x + detectionsCascada[0].width / 2-2, y1+detectionsCascada[0].y + detectionsCascada[0].height / 2-2, 4, 4), 250, imgGRAY.cols / 400 + 1);
 
-        *imgF = imgGRAY; ///
-        *detections = Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height);
-		
-		String a;
-		ostringstream str1;
-		str1 << cont;
-		string gcont = str1.str();
-		a = "/root/workspace/imDet/test" + gcont + ".jpg";
-		//a = "/root/workspace/imDet/test" + std::	ing(cont) + ".jpg";
+			*imgF = imgGRAY; ///
+			*detections = Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height);
+			
+			String a;
+			ostringstream str1;
+			str1 << cont;
+			string gcont = str1.str();
+			a = "/root/workspace/imDet/test" + gcont + ".jpg";
+			//a = "/root/workspace/imDet/test" + std::	ing(cont) + ".jpg";
 
-		imwrite(a, imgGRAY);
-		
-		//Se publica la imagen
-		sensor_msgs::Image img_msg;
-		std_msgs::Header header; 
-		//header.seq = counter; 
-		header.stamp = ros::Time::now(); 
-		img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_8UC1, imgGRAY);
-        img_bridge.toImageMsg(img_msg); 
-		detec_publisher.publish(img_msg); 
-    }
+			imwrite(a, imgGRAY);
+			
+			//Se publica la imagen
+			sensor_msgs::Image img_msg;
+			std_msgs::Header header; 
+			//header.seq = counter; 
+			header.stamp = ros::Time::now(); 
+			img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::TYPE_8UC1, imgGRAY);
+			img_bridge.toImageMsg(img_msg); 
+			detec_publisher.publish(img_msg); 
+		}
+		else {
+			//Devuelve la imagen original si no hubo detecciones
+			*imgF = imgGRAY;
+			
+			String a;
+			ostringstream str1;
+			str1 << cont;
+			string gcont = str1.str();
+			a = "/root/workspace/imDet/test" + gcont + ".jpg";
+			//a = "/root/workspace/imDet/test" + std::to_string(cont) + ".jpg";
+
+			imwrite(a, imgGRAY);
+		}
+	}
     else {
 		//Devuelve la imagen original si no hubo detecciones
+		String a = "/home/israel/Documents/k/test" + std::to_string(cont) + ".jpg";
         *imgF = imgGRAY;
-		
-		String a;
-		ostringstream str1;
-		str1 << cont;
-		string gcont = str1.str();
-		a = "/root/workspace/imDet/test" + gcont + ".jpg";
-		//a = "/root/workspace/imDet/test" + std::to_string(cont) + ".jpg";
-
-		imwrite(a, imgGRAY);
+        imwrite(a, imgGRAY);	
     }
-
 }
 
 /*
