@@ -193,7 +193,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
     else {
         imgGRAY = imgResize;
     }
-
+	if(x>0&&x<640&&y>0&&y<480&&width>0&&height>0){
     int x1, y1,width1,height1;
     int extra = (int)0.8 * width;
     if ((x + width +extra)> 640) {
@@ -316,7 +316,13 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 		//Devuelve la imagen original si no hubo detecciones
         *imgF = imgGRAY;
     }
-
+}
+    else {
+		//Devuelve la imagen original si no hubo detecciones
+	String a = "/home/israel/Documents/k/test" + std::to_string(cont) + ".jpg";
+        *imgF = imgGRAY;
+        imwrite(a, imgGRAY);	
+    }
 }
 
 /*
