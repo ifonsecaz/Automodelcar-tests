@@ -414,7 +414,12 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 	}
     else {
 		//Devuelve la imagen original si no hubo detecciones
-		String a = "/home/israel/Documents/k/test" + std::to_string(cont) + ".jpg";
+	    	String a;
+		ostringstream str1;
+		str1 << cont;
+		string gcont = str1.str();
+		a = "/root/workspace/imDet/test" + gcont + ".jpg";
+		//String a = "/home/israel/Documents/k/test" + std::to_string(cont) + ".jpg";
         *imgF = imgGRAY;
         imwrite(a, imgGRAY);	
     }
