@@ -128,9 +128,9 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
         resize(imgRec, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 		
 		//Se aplica un filtro gaussiano, igual se puede probar con motionblur, se da el formato correcto y se extraen sus características
-        GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+        //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
         vector< float > descriptorsSVM;
-        imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+        imgSVM.convertTo(imgSVMF, CV_8UC3);
         hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
 
    		Mat fm = Mat(1, descriptorsSVM.size(), CV_32FC1, descriptorsSVM.data()).clone(); //Opencv 2.4 usa una matriz en lugar de un vector
@@ -164,9 +164,9 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
 
     resize(imgEsquina, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 
-    GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+    //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
     vector< float > descriptorsSVM;
-    imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+    imgSVM.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
     Mat fm=Mat(1,descriptorsSVM.size(),CV_32FC1,descriptorsSVM.data()).clone();
     float result1 = svm->CvSVM::predict(fm); //usar svm2
@@ -189,8 +189,8 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
 
     resize(imgEsquina, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 
-    GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
-    imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+    //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+    imgSVM.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
     fm=Mat(1,descriptorsSVM.size(),CV_32FC1,descriptorsSVM.data()).clone();
     result1 = svm->CvSVM::predict(fm); 
