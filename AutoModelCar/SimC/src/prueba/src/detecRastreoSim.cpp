@@ -112,9 +112,9 @@ void detecVentana(Ptr<SVM> svm, Ptr<SVM> svm2, CascadeClassifier carC, Mat img, 
         resize(imgRec, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 		
 		//Se aplica un filtro gaussiano, igual se puede probar con motionblur, se da el formato correcto y se extraen sus características
-        GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+        //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
         vector< float > descriptorsSVM;
-        imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+        imgSVM.convertTo(imgSVMF, CV_8UC3);
         hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
         
 		//Se realiza la predicción con SVM
@@ -146,9 +146,9 @@ void detecVentana(Ptr<SVM> svm, Ptr<SVM> svm2, CascadeClassifier carC, Mat img, 
 
     resize(imgEsquina, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 
-    GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+    //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
     vector< float > descriptorsSVM;
-    imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+    imgSVM.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
     float result1 = svm->predict(descriptorsSVM); //usar svm2
     float result;
@@ -170,8 +170,8 @@ void detecVentana(Ptr<SVM> svm, Ptr<SVM> svm2, CascadeClassifier carC, Mat img, 
 
     resize(imgEsquina, imgSVM, Size(64, 64), 0, 0, cv::INTER_AREA);
 
-    GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
-    imgSVMBLUR.convertTo(imgSVMF, CV_8UC3);
+    //GaussianBlur(imgSVM, imgSVMBLUR, Size(5, 5), 0);
+    imgSVM.convertTo(imgSVMF, CV_8UC3);
     hog.compute(imgSVMF, descriptorsSVM, Size(0, 0), Size(0, 0));
     result1 = svm->predict(descriptorsSVM); 
     result;
