@@ -107,14 +107,16 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
 	boost::posix_time::time_duration diff = end - begin;
     cout << "Time detect cascade " << diff.total_milliseconds() << "[ms]" << std::endl;
 	
-    cout << "\n number of detections: " << (int)detectionsCascada.size();
+    cout << "\n number of detectionsC: " << (int)detectionsCascada.size();
     int aux = 0;
-	//Cada detección de cascada se evalúa, primero se toma un área alrededor un 20% más grande
+	//Cada detección de cascada se evalúa, primero se toma un área alrededor un 20%
+    if((int (detectionsCascada.size()>0))){
     for (size_t j = 0; j < detectionsCascada.size(); j++)
     {
         int width = detectionsCascada[j].width * 0.2;
         int height = detectionsCascada[j].height * 0.2;
 		//Revisa que no rebase la imagen 
+	
         if ((detectionsCascada[j].x - (int)(width/2)) > 0 && (detectionsCascada[j].y - (int)(height/2)) > 0 && (detectionsCascada[j].x + detectionsCascada[j].width + (int)(width/2)) < 640 && (detectionsCascada[j].y + detectionsCascada[j].height + (int)(height/2))<400) {
             imgRec = Mat(detectionsCascada[j].width+width, detectionsCascada[j].height+height, CV_64F, 0.0); //CV_64F 
             imgGRAY(Rect(detectionsCascada[j].x-(int)(width/2), detectionsCascada[j].y-(int)(height/2), detectionsCascada[j].width+width, detectionsCascada[j].height+height)).copyTo(imgRec(Rect(0, 0, detectionsCascada[j].width+width, detectionsCascada[j].height+height)));
@@ -153,6 +155,7 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
             detectionsFinal.push_back(detectionsCascada[j]);
             detectionsFinal.push_back(detectionsCascada[j]);
         }
+    }
     }
     //Resultados pobres
 	//El detector de cascada falla al detectar autos que van apareciendo por las esquinas, se probó a tomarlas para hacer la clasificación con SVM
@@ -211,6 +214,7 @@ void detecVentana(CvSVM *svm, CvSVM *svm2, CascadeClassifier carC, Mat img, int 
 	//Se calcula el promedio de los rectángulos detectados que se sobreponen
     groupRectangles(detectionsFinal, 1, 0.60); //groupThreshold numero minimo posible de rectangulos para retenerlo, eps cuanto deben sobreponerse, cuanto más cercano es a 0 no se agrupan
     aux = detectionsFinal.size();
+     
     for (int j = 0; j < detectionsFinal.size(); j++) {
         rectangle(imgGRAY, detectionsFinal[j], 200, imgGRAY.cols / 400 + 1);
         rectangle(imgGRAY, Rect(detectionsFinal[j].x + (detectionsFinal[j].width / 2)-2, detectionsFinal[j].y + (detectionsFinal[j].height / 2)-2, 4, 4), 250, imgGRAY.cols / 400 + 1);
@@ -266,34 +270,48 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 		int x1, y1,width1,height1;
 		int extra = (int)0.8 * width;
 		if ((x + width +extra)> 640) {
+			
 			width1 = 640 - x + extra;
+			//width1=witdh;
 			x1 = x - extra;
+			//x1=x;
 		}
 		else {
 			if ((x-extra)<0) {
+				
 				x1 = 0;
+				//x1=x;
 				width1 = width + extra + x;
+				//width1=width;
 			}
 			else {
+				
 				x1 = x - extra;
+				//x1=x;
 				width1 = width + 2 * extra;
+				//width1=width;
 			}
 
 		}
-		if (y + height + extra> 480) {
-			height1 = 480 - y + extra;
+		if (y + height + extra> 400) {
+			
+			height1 = 400 - y + extra;
 			y1 = y - extra;
 		}
 		else {
 			if ((y - extra) < 0) {
+				
 				y1 = 0;
 				height1 = height + extra + y;
 			}
 			else {
+				
 				y1 = y - extra;
 				height1 = height + 2 * extra;
 			}
 		}
+		
+		
 		Mat imgROI = Mat(height1, width1, CV_64F, 0.0);
 
 		vector< Rect > detectionsCascada;
@@ -334,10 +352,11 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 		//En caso de múltiples detecciones, se quiere tomar el promedio de las detecciones con groupRectangles, por ello se duplican
 		vector<Rect>detectionDup;
 		detectionDup = detectionsCascada;
-		detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
+		//detectionsCascada.insert(detectionsCascada.end(), detectionDup.begin(), detectionDup.end());
 
 		cout << "\n number of detections: " << (int)detectionsCascada.size();
 		if ((int(detectionsCascada.size() > 0))) {
+			detectionsCascada.insert(detectionsCascada.end(),detectionDup.begin(),detectionDup.end());
 			*encontro = true;
 			//Descomentar para usar las máquinas de soporte vectorial
 			//Sin Validacion gana 50 ms aproximadamente
@@ -373,6 +392,7 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 			}
 			*/
 			//Se agregan los rectángulos sobrepuestos, se dibujan sobre la imagen y se guard
+			
 			groupRectangles(detectionsCascada, 1, 0.60);
 			rectangle(imgGRAY, Rect(x1 + detectionsCascada[0].x, y1 + detectionsCascada[0].y, detectionsCascada[0].width, detectionsCascada[0].height), 200, imgGRAY.cols / 400 + 1); //Quitar si se incluye hog
 			rectangle(imgGRAY, Rect(x1+detectionsCascada[0].x + detectionsCascada[0].width / 2-2, y1+detectionsCascada[0].y + detectionsCascada[0].height / 2-2, 4, 4), 250, imgGRAY.cols / 400 + 1);
@@ -414,11 +434,11 @@ void detecRegion(CascadeClassifier carC, Mat img, int cont, int x, int y, int wi
 	}
     else {
 		//Devuelve la imagen original si no hubo detecciones
-	    	String a;
+		String a;
 		ostringstream str1;
 		str1 << cont;
-		string gcont = str1.str();
-		a = "/root/workspace/imDet/test" + gcont + ".jpg";
+		string gcont=str1.str();
+		a="/root/workspace/imDet/test"+gcont+".jpg";
 		//String a = "/home/israel/Documents/k/test" + std::to_string(cont) + ".jpg";
         *imgF = imgGRAY;
         imwrite(a, imgGRAY);	
@@ -472,7 +492,8 @@ void kalman(KalmanFilter kf, Rect detections, Mat img,int i,bool found, boost::p
 	//Devuelve el filtro actualizado
     *act = kf;
 	//Dibuja la predicción y se guarda la imagen
-    if (predRect.x < 640 && predRect.x>0 && predRect.y < 480 && predRect.y>0) {
+	
+    if (predRect.x < 640 && predRect.x>0 && predRect.y < 400 && predRect.y>0) {
         cv::rectangle(img, predRect, CV_RGB(255, 0, 0), 2);
         cv::rectangle(img, Rect(predRect.x + predRect.width / 2 - 1, predRect.y + predRect.height / 2 - 1, 2, 2), CV_RGB(1, 0, 0), 2);
     }
@@ -619,8 +640,8 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(RATE_HZ);
 
     String cascadaFile = "/root/workspace/catkin_ws1/src/vision_camara/src/cascade.xml"; 
-    String svmFile = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2C3.xml";
-    String svmFile2 = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2L3.xml"; 
+    String svmFile = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2C4.xml";
+    String svmFile2 = "/root/workspace/catkin_ws1/src/vision_camara/src/my_svmML2L4.xml"; 
 
     cout << "Iniciando detector..." << endl;
 	
