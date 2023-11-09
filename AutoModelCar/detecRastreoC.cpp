@@ -629,7 +629,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "detec_vehiculos");
 
 	ros::NodeHandle nh("~");
-	ros::Subscriber camara_sub = nh.subscribe("/app/camera/rgb/image_raw", 10, camaraRGBCallback);
+	ros::Subscriber camara_sub = nh.subscribe("/app/camera/rgb/image_raw", 1, camaraRGBCallback);
 	  
 	ros::Publisher detecciones = nh.advertise<vision_camara::detecArray>("/detecciones",1);//
 	
