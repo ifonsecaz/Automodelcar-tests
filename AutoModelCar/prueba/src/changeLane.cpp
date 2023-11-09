@@ -303,9 +303,9 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "mov_carro");
 
   ros::NodeHandle nh("~");
-  ros::Subscriber camara_sub = nh.subscribe("/app/camera/points", 10, camaraRGBCallback);///depth/points
+  ros::Subscriber camara_sub = nh.subscribe("/app/camera/points", 1, camaraRGBCallback);///depth/points
   //ros::Subscriber esquiva = nh.subscribe("/obs", 10, esquivaCallback);
-  ros::Subscriber detecciones = nh.subscribe("/detecciones", 10, deteccionesCallback);
+  ros::Subscriber detecciones = nh.subscribe("/detecciones", 1, deteccionesCallback);
 
   ros::Time current_time, last_time;
   current_time = ros::Time::now();
