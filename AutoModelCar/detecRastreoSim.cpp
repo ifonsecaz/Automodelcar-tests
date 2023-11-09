@@ -552,7 +552,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "detec_vehiculos");
 	ros::NodeHandle nh("~");
-	ros::Subscriber camara_sub = nh.subscribe("/app/camera/rgb/image_raw", 10, camaraRGBCallback);
+	ros::Subscriber camara_sub = nh.subscribe("/app/camera/rgb/image_raw", 1, camaraRGBCallback);
 
 	ros::Time current_time, last_time;
 	current_time = ros::Time::now();
